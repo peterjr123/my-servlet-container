@@ -4,50 +4,16 @@ import jakarta.servlet.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
-public class Request implements ServletRequest {
-    private InputStream input;
-    private String uri;
+public class RequestFacade implements ServletRequest {
+    private ServletRequest request = null;
 
-    public Request(InputStream input) {
-        this.input = input;
-    }
-
-    public void parse() {
-        StringBuffer request= new StringBuffer(2048);
-        int i;
-        byte[] buffer = new byte[2048];
-        try{
-            i = input.read(buffer);
-        } catch (IOException e) {
-            e.printStackTrace();
-            i = -1;
-        }
-        for(int j = 0; j < i; j++){
-            request.append(((char) buffer[j]));
-        }
-        System.out.println(request.toString());
-        uri = parseUrl(request.toString());
-    }
-
-    private String parseUrl(String request) {
-        int beforeIdx = request.indexOf(" ");
-        if(beforeIdx != -1){
-            int afterIdx = request.indexOf(" ", beforeIdx+1);
-            if(afterIdx > beforeIdx){
-                return request.substring(beforeIdx+1, afterIdx);
-            }
-        }
-        return null;
-    }
-
-    public String getUri() {
-        return uri;
+    public RequestFacade(ServletRequest request) {
+        this.request = request;
     }
 
     @Override
@@ -57,17 +23,17 @@ public class Request implements ServletRequest {
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        return null;
+        return request.getAttributeNames();
     }
 
     @Override
     public String getCharacterEncoding() {
-        return "";
+        return request.getCharacterEncoding();
     }
 
     @Override
     public void setCharacterEncoding(String env) throws UnsupportedEncodingException {
-
+        request.setCharacterEncoding(env);
     }
 
     @Override

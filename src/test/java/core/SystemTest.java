@@ -9,6 +9,6 @@ import java.nio.file.Path;
 public class SystemTest {
     @Test
     public void test() {
-        Assertions.assertTrue(Files.exists(Path.of(HttpServer.WEB_ROOT)));
+        Assertions.assertTrue(Files.exists(Path.of(Constants.WEB_ROOT)));
     }
 }

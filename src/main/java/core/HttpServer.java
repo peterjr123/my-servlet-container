@@ -1,5 +1,8 @@
 package core;
 
+import core.processor.ServletProcessor;
+import core.processor.StaticResourceProcessor;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,7 +11,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class HttpServer {
-    public static final String WEB_ROOT = System.getProperty("user.dir") + "/src/main/webapp";
 
     public static void main(String[] args) {
         HttpServer server = new HttpServer();
@@ -35,7 +37,15 @@ public class HttpServer {
 
                 Response response = new Response(output);
                 response.setRequest(request);
-                response.sendStaticResource();
+
+                if(request.getUri().startsWith("/servlet")) {
+                    ServletProcessor processor = new ServletProcessor();
+                    processor.process(request, response);
+                }
+                else {
+                    StaticResourceProcessor processor = new StaticResourceProcessor();
+                    processor.process(request, response);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
