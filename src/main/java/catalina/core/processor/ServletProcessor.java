@@ -1,22 +1,29 @@
-package core.processor;
+package catalina.core.processor;
 
-import core.*;
+import catalina.connector.Constants;
+import catalina.connector.http.*;
+import catalina.core.*;
 import jakarta.servlet.Servlet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandler;
-import java.util.logging.StreamHandler;
 
 
 public class ServletProcessor {
-    public void process(Request request, Response response) {
-        String uri = request.getUri();
+    private static final Logger log = LoggerFactory.getLogger(ServletProcessor.class);
+
+    public void process(HttpRequest request, HttpResponse response) {
+
+        String uri = request.getRequestURI();
         String servletName = uri.substring(uri.lastIndexOf('/') + 1);
+        log.debug("servletName: {}", servletName);
+
         URLClassLoader loader = null;
         try {
             URL[] urls = new URL[1];
@@ -44,7 +51,8 @@ public class ServletProcessor {
         try {
             Constructor constructor = clazz.getConstructor();
             servlet = (Servlet) constructor.newInstance();
-            servlet.service(new RequestFacade(request), new ResponseFacade(response));
+            servlet.service(new HttpRequestFacade(request), new HttpResponseFacade(response));
+            response.flushBuffer();
         }
         catch (Exception e) {
             System.out.println(e);

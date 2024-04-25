@@ -1,19 +1,179 @@
-package core;
+package catalina.connector.http;
 
 import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.Map;
+import java.security.Principal;
+import java.util.*;
 
-public class RequestFacade implements ServletRequest {
-    private ServletRequest request = null;
+public class HttpRequestFacade implements HttpServletRequest {
+    private HttpRequest request = null;
 
-    public RequestFacade(ServletRequest request) {
+    public HttpRequestFacade(HttpRequest request) {
         this.request = request;
+    }
+
+    @Override
+    public String getQueryString() {
+        return request.getQueryString();
+    }
+
+    @Override
+    public String getMethod() {
+        return request.getMethod();
+    }
+
+    @Override
+    public String getRequestURI() {
+        return request.getRequestURI();
+    }
+
+    @Override
+    public String getProtocol() {
+        return request.getProtocol();
+    }
+
+    @Override
+    public String getAuthType() {
+        return "";
+    }
+
+    @Override
+    public Cookie[] getCookies() {
+        return new Cookie[0];
+    }
+
+    @Override
+    public long getDateHeader(String name) {
+        return 0;
+    }
+
+    @Override
+    public String getHeader(String name) {
+        return "";
+    }
+
+    @Override
+    public Enumeration<String> getHeaders(String name) {
+        return null;
+    }
+
+    @Override
+    public Enumeration<String> getHeaderNames() {
+        return null;
+    }
+
+    @Override
+    public int getIntHeader(String name) {
+        return 0;
+    }
+
+    @Override
+    public String getPathInfo() {
+        return "";
+    }
+
+    @Override
+    public String getPathTranslated() {
+        return "";
+    }
+
+    @Override
+    public String getContextPath() {
+        return "";
+    }
+
+    @Override
+    public String getRemoteUser() {
+        return "";
+    }
+
+    @Override
+    public boolean isUserInRole(String role) {
+        return false;
+    }
+
+    @Override
+    public Principal getUserPrincipal() {
+        return null;
+    }
+
+    @Override
+    public String getRequestedSessionId() {
+        return "";
+    }
+
+    @Override
+    public StringBuffer getRequestURL() {
+        return null;
+    }
+
+    @Override
+    public String getServletPath() {
+        return "";
+    }
+
+    @Override
+    public HttpSession getSession(boolean create) {
+        return null;
+    }
+
+    @Override
+    public HttpSession getSession() {
+        return null;
+    }
+
+    @Override
+    public String changeSessionId() {
+        return "";
+    }
+
+    @Override
+    public boolean isRequestedSessionIdValid() {
+        return false;
+    }
+
+    @Override
+    public boolean isRequestedSessionIdFromCookie() {
+        return false;
+    }
+
+    @Override
+    public boolean isRequestedSessionIdFromURL() {
+        return false;
+    }
+
+    @Override
+    public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
+        return false;
+    }
+
+    @Override
+    public void login(String username, String password) throws ServletException {
+
+    }
+
+    @Override
+    public void logout() throws ServletException {
+
+    }
+
+    @Override
+    public Collection<Part> getParts() throws IOException, ServletException {
+        return List.of();
+    }
+
+    @Override
+    public Part getPart(String name) throws IOException, ServletException {
+        return null;
+    }
+
+    @Override
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
+        return null;
     }
 
     @Override
@@ -23,17 +183,17 @@ public class RequestFacade implements ServletRequest {
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        return request.getAttributeNames();
+        return null;
     }
 
     @Override
     public String getCharacterEncoding() {
-        return request.getCharacterEncoding();
+        return "";
     }
 
     @Override
     public void setCharacterEncoding(String env) throws UnsupportedEncodingException {
-        request.setCharacterEncoding(env);
+
     }
 
     @Override
@@ -74,11 +234,6 @@ public class RequestFacade implements ServletRequest {
     @Override
     public Map<String, String[]> getParameterMap() {
         return Map.of();
-    }
-
-    @Override
-    public String getProtocol() {
-        return "";
     }
 
     @Override
