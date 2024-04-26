@@ -1,53 +1,152 @@
 package catalina.connector.http;
 
+import catalina.connector.Connector;
+import catalina.connector.http.support.HttpHeader;
 import catalina.connector.http.support.HttpRequestLine;
-import catalina.core.processor.ServletProcessor;
-import catalina.core.processor.StaticResourceProcessor;
 
 import catalina.util.SocketInputStream;
+import catalina.util.StringManager;
 import jakarta.servlet.ServletException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class HttpProcessor {
+public class HttpProcessor implements Runnable{
     private static final Logger log = LoggerFactory.getLogger(HttpProcessor.class);
     private HttpRequestLine requestLine = new HttpRequestLine();
+    private HttpHeader header = new HttpHeader();
     private HttpRequest request = null;
     private HttpResponse response = null;
+    private Socket socket = null;
+    private Connector connector = null;
+    // set to true when socket is assigned
+    private boolean available = false;
+    private boolean keepAlive = true;
+    private boolean http11 = true;
+    private boolean finishResponse = true;
 
-    public void process(Socket socket) {
-        try (SocketInputStream input = new SocketInputStream(socket.getInputStream(), 2048);
-             OutputStream output = socket.getOutputStream()) {
+    public HttpProcessor(Connector connector) {
+        this.connector = connector;
+        Thread thread = new Thread(this);
+        thread.start();
+    }
 
-            request = new HttpRequest(input);
-            response = new HttpResponse(output);
-            response.setRequest(request);
-            response.setHeader("Server", "My Servlet Container");
-            parseRequest(input, output);
-            parseHeaders(input);
+    @Override
+    public void run() {
+        while(true) {
+            Socket socket = await();
+            if(socket == null)
+                continue;
 
-            log.debug("uri: {}", request.getRequestURI());
-            // passes request&response to container
-            if(request.getRequestURI().startsWith("/servlet")) {
-                ServletProcessor processor = new ServletProcessor();
-                processor.process(request, response);
+            try {
+                log.debug("processing request with new process");
+                process(socket);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            else {
-                StaticResourceProcessor processor = new StaticResourceProcessor();
-                processor.process(request, response);
-            }
-        }
-        catch (IOException | ServletException e) {
-            System.out.println(e.getMessage());
+
+            log.debug("recycle old process");
+            connector.recycle(this);
         }
     }
 
-    private void parseHeaders(SocketInputStream input) {
+    synchronized void assign(Socket socket) {
+        while(available) {
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
 
+            }
+        }
+
+        this.socket = socket;
+        available = true;
+        notifyAll();
+    }
+
+    private synchronized Socket await() {
+        while(!available) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+
+            }
+        }
+
+        Socket socket = this.socket;
+        available = false;
+        notifyAll();
+
+        return socket;
+    }
+
+
+    public void process(Socket socket) throws IOException {
+        try (SocketInputStream input = new SocketInputStream(socket.getInputStream(), connector.getBufferSize());
+             OutputStream output = socket.getOutputStream()) {
+            while(keepAlive) {
+                log.debug("create new request&response");
+                request = new HttpRequest(input);
+                response = new HttpResponse(output);
+                response.setRequest(request);
+                response.setHeader("Server", "My Servlet Container");
+
+                log.debug("parse request&header");
+                try {
+                    parseRequest(input, output);
+                }
+                catch (Exception e) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    continue;
+                }
+                parseHeaders(input);
+
+                if(http11) {
+                    ackRequest(output);
+                    if(connector.isChunkingAllowed())
+                        response.setAllowChunking(true);
+                }
+
+                connector.getContainer().invoke(request, response);
+
+                output.flush();
+
+                if("close".equals(response.getHeader("Connection"))) {
+                    keepAlive = false;
+                }
+            }
+        }
+        catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        finally {
+            socket.close();
+        }
+    }
+
+
+
+    private void parseHeaders(SocketInputStream input) throws IOException {
+        while(input.readHeader(header) != -1) {
+            if(header.nameEquals("Cookie")) {
+                // parse cookies..
+            }
+            else if(header.nameEquals("Connection")) {
+                if(header.valueEquals("close")) {
+                    keepAlive = false;
+                    response.setHeader("Connection", "close");
+                }
+            }
+        }
     }
 
     private void parseRequest(SocketInputStream input, OutputStream output) throws ServletException, IOException {
@@ -57,7 +156,7 @@ public class HttpProcessor {
         String protocol = requestLine.getProtocol();
 
         if(method.length() < 1) {
-            throw new ServletException("Missing HTTP request method");
+            throw new ServletException("Missing HTTP method");
         }
         else if(requestLine.getUri() == null) {
             throw new ServletException("Missing HTTP request uri");
@@ -132,4 +231,15 @@ public class HttpProcessor {
         // need to normalize
         return uri;
     }
+
+    private void ackRequest(OutputStream output) {
+    }
+
+    private void parseConnection(Socket socket) {
+
+    }
+
+
+
+
 }

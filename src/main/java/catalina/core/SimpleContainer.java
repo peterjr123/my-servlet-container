@@ -1,8 +1,11 @@
-package catalina.core.processor;
+package catalina.core;
+
 
 import catalina.connector.Constants;
-import catalina.connector.http.*;
-import catalina.core.*;
+import catalina.connector.http.HttpRequest;
+import catalina.connector.http.HttpRequestFacade;
+import catalina.connector.http.HttpResponse;
+import catalina.connector.http.HttpResponseFacade;
 import jakarta.servlet.Servlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +17,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandler;
 
+public class SimpleContainer implements Container {
+    private static final Logger log = LoggerFactory.getLogger(SimpleContainer.class);
 
-public class ServletProcessor {
-    private static final Logger log = LoggerFactory.getLogger(ServletProcessor.class);
-
-    public void process(HttpRequest request, HttpResponse response) {
-
+    @Override
+    public void invoke(HttpRequest request, HttpResponse response) {
         String uri = request.getRequestURI();
         String servletName = uri.substring(uri.lastIndexOf('/') + 1);
         log.debug("servletName: {}", servletName);
@@ -29,7 +31,7 @@ public class ServletProcessor {
             URL[] urls = new URL[1];
             File classPath = new File(Constants.SERVLET_ROOT);
             String repository = (new URL("file", null, classPath.getCanonicalPath() + File.separator)).toString();
-            System.out.println(repository);
+            log.debug("repository: {}", repository);
 
             URLStreamHandler streamHandler = null;
             urls[0] = new URL(null, repository, streamHandler);
@@ -45,6 +47,12 @@ public class ServletProcessor {
         }
         catch (ClassNotFoundException e) {
             System.out.println(e);
+            try {
+                clazz = loader.loadClass(Constants.SERVLET_PACKAGE + "." + "NotFoundServlet");
+            } catch (ClassNotFoundException ex) {
+                log.error("cannot find NotFoundServlet class");
+                throw new RuntimeException(ex);
+            }
         }
 
         Servlet servlet = null;

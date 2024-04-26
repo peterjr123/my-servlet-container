@@ -21,6 +21,7 @@ public class HttpRequest implements HttpServletRequest {
     private String requestUri;
     private String queryString;
 
+
     public HttpRequest(SocketInputStream input) {
         this.input = input;
     }

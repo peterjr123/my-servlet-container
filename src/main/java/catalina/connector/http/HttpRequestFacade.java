@@ -10,9 +10,9 @@ import java.security.Principal;
 import java.util.*;
 
 public class HttpRequestFacade implements HttpServletRequest {
-    private HttpRequest request = null;
+    private HttpServletRequest request = null;
 
-    public HttpRequestFacade(HttpRequest request) {
+    public HttpRequestFacade(HttpServletRequest request) {
         this.request = request;
     }
 

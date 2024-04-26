@@ -5,10 +5,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class PrimitiveServlet extends HttpServlet {
+    static String fileRoot = System.getProperty("user.dir") + "/src/test/resources/";
     @Override
     public void init(ServletConfig config) throws ServletException {
         System.out.println("Servlet init");
@@ -21,17 +22,36 @@ public class PrimitiveServlet extends HttpServlet {
 
     @Override
     public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        System.out.println("Servlet service");
-        System.out.println("method: " + req.getMethod());
-        System.out.println("uri: " + req.getRequestURI());
-        System.out.println("protocol: " + req.getProtocol());
-
+        System.out.println("Servlet do service....");
         PrintWriter out = res.getWriter();
-        out.println("HTTP/1.1 200 OK");
-        out.println("Content-Type: text/html");
-        out.println("Content-Length: 13");
-        out.println();
-        out.println("Hello world!!");
+        try {
+            writeFile(out);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Servlet end service....");
+    }
+
+    private void writeFile(PrintWriter writer) throws IOException {
+        int bufferSize = 1024;
+        char[] bytes = new char[bufferSize];
+
+        File file = new File(fileRoot, "index.html");
+        FileReader fileReader = new FileReader(file);
+
+        writer.println("HTTP/1.1 200 OK");
+        writer.println("Content-Type: text/html");
+        String contentLength = "Content-Length: " + file.length();
+        writer.println(contentLength);
+        writer.println("Connection: close");
+        writer.println();
+
+        int ch = fileReader.read(bytes, 0, bufferSize);
+        while(ch != -1) {
+            writer.write(bytes, 0, ch);
+            ch = fileReader.read(bytes, 0, bufferSize);
+        }
     }
 
     @Override

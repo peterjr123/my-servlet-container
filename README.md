@@ -19,7 +19,7 @@ ServletRequest(또는 Response)를 구현하는 클래스 Request를 up-casting�
 
 ## Chapter3
 
-## Connector 모듈 구현
+### Connector 모듈 구현
 
 책에서 설명하는 Tomcat의 주요가 되는 컴포넌트인 Connector - Container 중 하나인 Connector를 조금 더 자세하게 구현하였다.  
 정리하자면 Connector의 주요 역활은 Client의 요청이 들어오면 HttpRequest와 HttpResponse를 생성하여,
@@ -35,7 +35,7 @@ request.setRequestSessionURL의 boolean값이 true인 경우에 클라이언트�
 (미리 본 chapter4에서 container가 하는 역활 중, manage session이 존재했다.) 따라서 이러한 의사 결정 코드는 보지 못했지만, 이러한 과정의 일부로써
 connector가 참여하는 것을 구체적 코드로 경험하는 것 만으로도 chapter 3가 유익했다고 본다.
 
-
+## Chapter 4
 
 
 

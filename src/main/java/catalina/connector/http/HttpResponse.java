@@ -28,7 +28,8 @@ public class HttpResponse implements HttpServletResponse {
 
     public void sendStaticResource() {
     }
-
+    public void setAllowChunking(boolean allowChunking) {
+    }
 
     /*
      *
