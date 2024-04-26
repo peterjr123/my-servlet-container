@@ -37,5 +37,26 @@ connector가 참여하는 것을 구체적 코드로 경험하는 것 만으로�
 
 ## Chapter 4
 
+Chapter 4의 내용을 간략하게 정리하자면 다음과 같다.
+
+- 여러개의 클라이언트 요청을 동시에 처리하기 위해서 HttpProcessor를 비동기적으로 사용하는 방법
+- tomcat이 Persistence Connection(Connection: Keep-Alive 헤더)를 지원하는 방법
+- Request&Response 객체들의 클래스 다이어그램(구조)
+
+먼저 HttpProcessor를 비동기적으로 활용하는 코드 구현 파트에서는 Connection 모듈에서 Processor의 pool을 생성하고 이를 재사용하는 코드를 직접 구현해 볼 수
+있었다. 또한 여러개의 processor가 하나의 Container를 사용하게 만드는 부분 또한 서블릿 컨테이너의 구조를 한층 더 이해할 수 있도록 만드는 부분이라고 
+생각한다. BootStrap 코드에서 Connector와 Container를 모두 생성하여 Connector에 Container를 제공하고, Connector가 이를 여러개의 processor에 
+할당함으로써 request&response를 해석하고 초기화하는 processor는 여러개의 인스턴스가 존재하지만, 이를 사용하는 Container의 인스턴스는
+하나로 관리한다는 부분들을 파악할 수 있었다.  
+이렇게 container가 하나이기 때문에 container가 관리하는 servlet 인스턴스가 하나로 유지될 수 있다는 점도 파악할 수 있다. (비록 현재는 요청마다
+인스턴스를 생성하지만, 이 또한 추후 챕터에서 개선될 것이라고 예측할 수 있는 부분이다.)
+
+persistence connection을 구현하는 부분은 책에 자세히 설명되어 있지 않았던 만큼, 여러가지의 시행착오를 겪은 부분이다.  
+문제는 "하나의 tcp connection으로 오는 여러개의 메시지를 어떻게 구분할 것인가?" 였다.
+직접 구현을 통해서 알아보니, 요청이 동일한 socket에, 비연속적으로 오는 경우에는 java의 inputstream이 시작을 인식할 수 있으므로 구분할 수 있으며,
+연속적으로 오는 경우에는 content-length 헤더를 통해서 구분해야 한다.
+추가적으로 Connection: Keep-Alive와 Keep-Alive: timeout=5 헤더를 통해서 여러개의 소켓이 아닌 하나의 소켓으로 요청을 처리할 수 있도록 하는
+코드를 작성하여, 이에 대한 동작을 확인했고, 반대로 Connection: close를 통해서 무조건 하나의 요청마다 다른 processor를 사용하도록 강제하는
+코드 또한 구현하여 이를 확인해 보았다.
 
 
