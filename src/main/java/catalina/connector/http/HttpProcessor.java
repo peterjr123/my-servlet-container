@@ -97,17 +97,7 @@ public class HttpProcessor implements Runnable{
                 response.setHeader("Server", "My Servlet Container");
 
                 log.debug("parse request&header");
-                try {
-                    parseRequest(input, output);
-                }
-                catch (Exception e) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                    continue;
-                }
+                parseRequest(input, output);
                 parseHeaders(input);
 
                 if(http11) {
@@ -127,8 +117,9 @@ public class HttpProcessor implements Runnable{
         }
         catch (IOException e) {
             System.out.println(e.getMessage());
-        }
-        finally {
+        } catch (ServletException e) {
+            throw new RuntimeException(e);
+        } finally {
             socket.close();
         }
     }
@@ -150,7 +141,8 @@ public class HttpProcessor implements Runnable{
     }
 
     private void parseRequest(SocketInputStream input, OutputStream output) throws ServletException, IOException {
-        input.readRequestLine(requestLine);
+        while(input.readRequestLine(requestLine) == false)
+            ;
         String method = requestLine.getMethod();
         String uri = null;
         String protocol = requestLine.getProtocol();

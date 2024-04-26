@@ -2,9 +2,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 
 public class PersistenceConnectionTest {
@@ -14,6 +12,14 @@ public class PersistenceConnectionTest {
         PersistenceConnectionTest test = new PersistenceConnectionTest();
         test.start();
     }
+
+    @Test
+    public void testJdk() throws Exception {
+        URL url = new URL("http://nate.com");
+        URLConnection urlConnection = url.openConnection();
+        InputStream is = urlConnection.getInputStream();
+    }
+
 
     public void start() throws Exception {
         int port = 8080;
@@ -28,15 +34,15 @@ public class PersistenceConnectionTest {
         System.out.println("fileName: " + fileName);
         sendResponse(outputStream, fileName);
 
+        int count = 0;
         while(true) {
             System.out.println("read Request... -------------------------");
             fileName = readPersistentRequest(inputStream);
             System.out.println("next fileName: " + fileName);
             sendResponse(outputStream, fileName);
 
-            if(fileName.equals("css3.css")) {
+            if(++count >= 5)
                 break;
-            }
         }
     }
 
@@ -110,5 +116,7 @@ public class PersistenceConnectionTest {
             outputStream.write(bytes, 0, ch);
             ch = fileInputStream.read(bytes, 0, bufferSize);
         }
+
+        outputStream.flush();
     }
 }

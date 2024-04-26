@@ -24,7 +24,7 @@ public class SocketInputStream extends InputStream {
         return bufferedReader.read();
     }
 
-    public void readRequestLine(HttpRequestLine requestLine) throws IOException {
+    public boolean readRequestLine(HttpRequestLine requestLine) throws IOException {
         String line = bufferedReader.readLine();
         if (line != null) {
             log.debug("Read request line: {}", line);
@@ -40,11 +40,12 @@ public class SocketInputStream extends InputStream {
                 }
 
                 requestLine.setProtocol(parsed[2]);
+                return true;
             } else {
                 throw new IOException("Invalid request line: " + line);
             }
         } else {
-            throw new IOException("input data is null");
+            return false;
         }
     }
 

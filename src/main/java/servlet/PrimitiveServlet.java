@@ -44,7 +44,8 @@ public class PrimitiveServlet extends HttpServlet {
         writer.println("Content-Type: text/html");
         String contentLength = "Content-Length: " + file.length();
         writer.println(contentLength);
-        writer.println("Connection: close");
+        writer.println("Connection: keep-alive");
+        writer.println("Keep-Alive: timeout=5");
         writer.println();
 
         int ch = fileReader.read(bytes, 0, bufferSize);
