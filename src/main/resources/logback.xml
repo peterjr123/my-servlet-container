@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss.SSS, GMT+9}][%thread][%-5level][%marker]\\(%F:%L\\): %m%n" />
+    <property name="LOG_PATTERN" valve="[%d{yyyy-MM-dd HH:mm:ss.SSS, GMT+9}][%thread][%-5level][%marker]\\(%F:%L\\): %m%n" />
 
     <!-- 콘솔 출력 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

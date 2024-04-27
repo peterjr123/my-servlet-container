@@ -2,7 +2,6 @@ package catalina.connector;
 
 import catalina.connector.http.HttpProcessor;
 import catalina.core.Container;
-import catalina.core.SimpleContainer;
 
 
 public interface Connector {
