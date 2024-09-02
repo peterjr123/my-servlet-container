@@ -1,14 +1,17 @@
 package catalina.core;
 
 import catalina.connector.Constants;
+import catalina.lifecycle.Lifecycle;
+import catalina.lifecycle.LifecycleListener;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandler;
+import java.util.List;
 
-public class SimpleLoader implements Loader {
+public class SimpleLoader implements Loader, Lifecycle {
     ClassLoader classLoader;
     Container container;
 
@@ -31,5 +34,32 @@ public class SimpleLoader implements Loader {
     @Override
     public ClassLoader getClassLoader() {
         return classLoader;
+    }
+
+    // --------------------------------- implementation of Lifecycle interface --------------------
+
+    @Override
+    public void addLifecycleListener(LifecycleListener listener) {
+
+    }
+
+    @Override
+    public List<LifecycleListener> findLifecycleListeners() {
+        return null;
+    }
+
+    @Override
+    public void removeLifecycleListener(LifecycleListener listener) {
+
+    }
+
+    @Override
+    public void start() {
+        System.out.println("Starting SimpleLoader");
+    }
+
+    @Override
+    public void stop() {
+
     }
 }

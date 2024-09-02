@@ -2,19 +2,25 @@ package catalina.core;
 
 import catalina.connector.http.HttpRequest;
 import catalina.connector.http.HttpResponse;
+import catalina.lifecycle.Lifecycle;
+import catalina.lifecycle.LifecycleListener;
+import catalina.util.LifecycleSupport;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletException;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.util.List;
 
-public class SimpleWrapper implements Wrapper, Pipeline {
+public class SimpleWrapper implements Wrapper, Pipeline, Lifecycle {
     private Servlet instance;
     private Loader loader;
     private String servletClass;
     private String name;
     protected Container parent;
     private SimplePipeline pipeline = new SimplePipeline(this);
+    protected LifecycleSupport lifecycle = new LifecycleSupport(this);
+    protected boolean started = false;
 
     public SimpleWrapper() {
         pipeline.setBasic(new SimpleWrapperValve());
@@ -71,6 +77,11 @@ public class SimpleWrapper implements Wrapper, Pipeline {
     @Override
     public Container findChild(String name) {
         return null;
+    }
+
+    @Override
+    public Container[] findChildren() {
+        return new Container[0];
     }
 
     @Override
@@ -144,5 +155,66 @@ public class SimpleWrapper implements Wrapper, Pipeline {
     @Override
     public void removeValve(Valve valve) {
         pipeline.removeValve(valve);
+    }
+
+    // ------------------------------------ implementation of Lifecycle interface --------------------------------------
+
+    @Override
+    public void addLifecycleListener(LifecycleListener listener) {
+
+    }
+
+    @Override
+    public List<LifecycleListener> findLifecycleListeners() {
+        return List.of();
+    }
+
+    @Override
+    public void removeLifecycleListener(LifecycleListener listener) {
+
+    }
+
+    @Override
+    public void start() {
+        System.out.println("starting wrapper " + name);
+        if(started)
+            throw new IllegalStateException("wrapper is already started");
+        lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
+        started = true;
+
+        if((loader != null) && (loader instanceof Lifecycle)) {
+            ((Lifecycle) loader).start();
+        }
+        if(pipeline instanceof Lifecycle) {
+            ((Lifecycle) pipeline).start();
+        }
+        lifecycle.fireLifecycleEvent(START_EVENT, null);
+        lifecycle.fireLifecycleEvent(AFTER_START_EVENT, null);
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("stopping wrapper " + name);
+        try {
+            instance.destroy();
+        }
+        catch (Throwable e) {}
+
+        instance = null;
+        if(!started)
+            throw new IllegalStateException("wrapper is not started");
+
+        lifecycle.fireLifecycleEvent(BEFORE_STOP_EVENT, null);
+        lifecycle.fireLifecycleEvent(STOP_EVENT, null);
+        started = false;
+
+        if(pipeline instanceof Lifecycle) {
+            ((Lifecycle) pipeline).stop();
+        }
+        if((loader != null) && (loader instanceof Lifecycle)) {
+            ((Lifecycle) loader).stop();
+        }
+
+        lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
     }
 }

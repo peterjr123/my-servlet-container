@@ -2,6 +2,7 @@ package catalina.startup;
 
 import catalina.connector.http.HttpConnector;
 import catalina.core.*;
+import catalina.lifecycle.Lifecycle;
 
 public final class BootStrap {
     public static void main(String[] args) {
@@ -32,8 +33,11 @@ public final class BootStrap {
         context.addServletMapping("/servlet/PrimitiveServlet", "Primitive");
         context.addServletMapping("/servlet/ModernServlet", "Modern");
 
+        ((Lifecycle)context).addLifecycleListener(new SimpleContextLifecycleListener());
+
         connector.setContainer(context);
 
         connector.start();
+        ((Lifecycle) context).start();
     }
 }

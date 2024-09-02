@@ -81,7 +81,7 @@ Chapter 5에서는 다음과 같은 내용을 공부했다.
 두번째로 container의 task를 pipeline과 valve를 통해서 처리하는 부분을 구현하였다. 이렇게 구현한 설계적 이점에 대해서 책에서 설명하지 않았지만,
 개인적으로 생각해본 설계적 이점은 다음과 같다.
 1. 각각의 컴포넌트(Engine, Host, Context, Wrapper)가 task를 처리하기 위한 독립적인 인터페이스를 갖는것은 algorithm을 한곳에서 관리할 수 없다.
-2. 그렇다고 Container 인터페이스 task를 처리하기 위한 메소드를 추가하는 것은 처리된 request와 response를 알맞은 servlet으로 mapping 해준다는
+2. 그렇다고 Container 인터페이스에 task를 처리하기 위한 메소드를 추가하는 것은 처리된 request와 response를 알맞은 servlet으로 mapping 해준다는
 container의 유일한 책임에 부합하지 않으므로, 독립적인 인터페이스(클래스)를 갖는것이 설계상으로 유리하다.  
 -> 따라서 Pipeline 인터페이스를 독립적으로 가져야 한다. (사실 이부분은 Mapper나 Loader와 동일하게 여러가지 책임을 분리하는 것이다)
 3. 또한 Valve를 이용해서 각 task가 컴포넌트의 종류에 의존하지 않도록 구성하였다. 이를 통해서 각 Valve를 재사용하기 쉬워졌다.
@@ -105,3 +105,18 @@ pipeline, valve등, 간단한 container에서는 구현할 필요가 없는 추�
 부분을 차지한다고 본다. tomcat github를 보니 session관리(PersistenceValve)와 Filter관리 (FilterValve)등이 Valve로 구현되어 있었다.
 이렇게 Valve와 같이 task를 처리하는 부분들을 별도의 클래스로 처리하는 방식을 추후 나의 코드에서도 적용해볼수있지 않을까 하는 생각이 든다.
 (물론 Valve와 같이 사용하려면 invoke메소드, 즉 task를 처리하기 위해 주어지는 인자가 동일해야하는 제한이 존재하지만 말이다)
+
+## Chapter 6
+
+chapter 6에서는 Lifecycle에 대해서 공부한다.
+
+Lifecycle의 이점은 다음과 같다
+1. 계층구조를 통하여 최상위 컴포넌트의 start/stop(lifecycle중 하나)를 통해서 모든 하위 컴포넌트의 start/stop을 트리거한다.
+2. init/destroy 의 일반화
+3. 2번으로 부터 얻어지는 listener 등록의 일반화
+
+제일 흥미로웠던 부분은 1번이라고 생각하는데, start 코드를 보면 child 컴포넌트와, loader/pipeline과 같이 연관된 컴포넌트의 start를 
+트리거하는 부분을 확인할 수 있다.
+추가적으로 자식 컴포넌트의 start가 완료된 뒤에 부모 컴포넌트의 start_event가 발생하는 부분을 확인할 수 있다.
+
+톰캣의 컴포넌트의 초기화 프로세스 흐름을 파악할 수 있는 유용한 챕터라고 생각한다.

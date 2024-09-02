@@ -19,6 +19,6 @@ public interface Container {
 
     void addChild(Container child);
     Container findChild(String name);
-
+    Container[] findChildren();
     void addMapper(Mapper mapper);
 }

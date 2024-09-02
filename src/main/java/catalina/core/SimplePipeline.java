@@ -2,13 +2,15 @@ package catalina.core;
 
 import catalina.connector.http.HttpRequest;
 import catalina.connector.http.HttpResponse;
+import catalina.lifecycle.Lifecycle;
+import catalina.lifecycle.LifecycleListener;
 import jakarta.servlet.ServletException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimplePipeline implements Pipeline {
+public class SimplePipeline implements Pipeline, Lifecycle {
     List<Valve> valves = new ArrayList<>();
     Valve basic;
     Container container;
@@ -16,6 +18,8 @@ public class SimplePipeline implements Pipeline {
     public SimplePipeline(Container container) {
         this.container = container;
     }
+
+    // --------------------------------------------- implementation of Pipeline ---------------------------
 
     @Override
     public Valve getBasic() {
@@ -45,6 +49,34 @@ public class SimplePipeline implements Pipeline {
     public void removeValve(Valve valve) {
         valves.remove(valve);
     }
+
+    // ------------------------------------- implementation of Lifecycle -----------------------------------------
+    @Override
+    public void addLifecycleListener(LifecycleListener listener) {
+
+    }
+
+    @Override
+    public List<LifecycleListener> findLifecycleListeners() {
+        return List.of();
+    }
+
+    @Override
+    public void removeLifecycleListener(LifecycleListener listener) {
+
+    }
+
+    @Override
+    public void start() {
+        System.out.println("starting pipeline");
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    // ---------------------------------------------------
 
     class StandardPipelineValveContext implements ValveContext {
         protected int stage = 0;
